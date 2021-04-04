@@ -333,9 +333,9 @@ def _sliding_attacks(square: Square, occupied: Bitboard, deltas: Iterable[int]) 
 def _step_attacks(square: Square, deltas: Iterable[int]) -> Bitboard:
     return _sliding_attacks(square, BB_ALL, deltas)
 
-BB_KNIGHT_ATTACKS = [_step_attacks(sq, [17, 15, 10, 6, -17, -15, -10, -6]) for sq in SQUARES]
-BB_KING_ATTACKS = [_step_attacks(sq, [9, 8, 7, 1, -9, -8, -7, -1]) for sq in SQUARES]
-BB_PAWN_ATTACKS = [[_step_attacks(sq, deltas) for sq in SQUARES] for deltas in [[-7, -9], [7, 9]]]
+BB_KNIGHT_ATTACKS = [_step_attacks(sq, [11, 9, 7, 3, -11, -9, -7, -3]) for sq in SQUARES]
+BB_KING_ATTACKS = [_step_attacks(sq, [6, 5, 4, 1, -6, -5, -4, -1]) for sq in SQUARES]
+BB_PAWN_ATTACKS = [[_step_attacks(sq, deltas) for sq in SQUARES] for deltas in [[-4, -6], [4, 6]]]
 
 
 def _edges(square: Square) -> Bitboard:
