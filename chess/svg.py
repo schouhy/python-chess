@@ -279,8 +279,8 @@ def board(board: Optional[chess.BaseBoard] = None, *,
         Use *orientation* with a color instead of the *flipped* toggle.
     """
     orientation ^= flipped
-    margin = 15 if coordinates else 0
-    svg = _svg(8 * SQUARE_SIZE + 2 * margin, size)
+    margin = 11 if coordinates else 0
+    svg = _svg(6 * SQUARE_SIZE + 2 * margin, size)
 
     if style:
         ET.SubElement(svg, "style").text = style
@@ -305,28 +305,28 @@ def board(board: Optional[chess.BaseBoard] = None, *,
         ET.SubElement(svg, "rect", _attrs({
             "x": 0,
             "y": 0,
-            "width": 2 * margin + 8 * SQUARE_SIZE,
-            "height": 2 * margin + 8 * SQUARE_SIZE,
+            "width": 2 * margin + 6 * SQUARE_SIZE,
+            "height": 2 * margin + 6 * SQUARE_SIZE,
             "fill": margin_color,
             "opacity": margin_opacity if margin_opacity < 1.0 else None,
         }))
         coord_color, coord_opacity = _color(colors, "coord")
         for file_index, file_name in enumerate(chess.FILE_NAMES):
-            x = (file_index if orientation else 7 - file_index) * SQUARE_SIZE + margin
+            x = (file_index if orientation else 5 - file_index) * SQUARE_SIZE + margin
             svg.append(_coord(file_name, x, 0, SQUARE_SIZE, margin, True, margin, color=coord_color, opacity=coord_opacity))
-            svg.append(_coord(file_name, x, margin + 8 * SQUARE_SIZE, SQUARE_SIZE, margin, True, margin, color=coord_color, opacity=coord_opacity))
+            svg.append(_coord(file_name, x, margin + 6 * SQUARE_SIZE, SQUARE_SIZE, margin, True, margin, color=coord_color, opacity=coord_opacity))
         for rank_index, rank_name in enumerate(chess.RANK_NAMES):
-            y = (7 - rank_index if orientation else rank_index) * SQUARE_SIZE + margin
+            y = (5 - rank_index if orientation else rank_index) * SQUARE_SIZE + margin
             svg.append(_coord(rank_name, 0, y, margin, SQUARE_SIZE, False, margin, color=coord_color, opacity=coord_opacity))
-            svg.append(_coord(rank_name, margin + 8 * SQUARE_SIZE, y, margin, SQUARE_SIZE, False, margin, color=coord_color, opacity=coord_opacity))
+            svg.append(_coord(rank_name, margin + 6 * SQUARE_SIZE, y, margin, SQUARE_SIZE, False, margin, color=coord_color, opacity=coord_opacity))
 
     # Render board.
     for square, bb in enumerate(chess.BB_SQUARES):
         file_index = chess.square_file(square)
         rank_index = chess.square_rank(square)
 
-        x = (file_index if orientation else 7 - file_index) * SQUARE_SIZE + margin
-        y = (7 - rank_index if orientation else rank_index) * SQUARE_SIZE + margin
+        x = (file_index if orientation else 5 - file_index) * SQUARE_SIZE + margin
+        y = (5 - rank_index if orientation else rank_index) * SQUARE_SIZE + margin
 
         cls = ["square", "light" if chess.BB_LIGHT_SQUARES & bb else "dark"]
         if lastmove and square in [lastmove.from_square, lastmove.to_square]:
@@ -351,8 +351,8 @@ def board(board: Optional[chess.BaseBoard] = None, *,
         file_index = chess.square_file(check)
         rank_index = chess.square_rank(check)
 
-        x = (file_index if orientation else 7 - file_index) * SQUARE_SIZE + margin
-        y = (7 - rank_index if orientation else rank_index) * SQUARE_SIZE + margin
+        x = (file_index if orientation else 5 - file_index) * SQUARE_SIZE + margin
+        y = (5 - rank_index if orientation else rank_index) * SQUARE_SIZE + margin
 
         ET.SubElement(svg, "rect", _attrs({
             "x": x,
@@ -368,8 +368,8 @@ def board(board: Optional[chess.BaseBoard] = None, *,
         file_index = chess.square_file(square)
         rank_index = chess.square_rank(square)
 
-        x = (file_index if orientation else 7 - file_index) * SQUARE_SIZE + margin
-        y = (7 - rank_index if orientation else rank_index) * SQUARE_SIZE + margin
+        x = (file_index if orientation else 5 - file_index) * SQUARE_SIZE + margin
+        y = (5 - rank_index if orientation else rank_index) * SQUARE_SIZE + margin
 
         if board is not None:
             piece = board.piece_at(square)
@@ -405,10 +405,10 @@ def board(board: Optional[chess.BaseBoard] = None, *,
         head_file = chess.square_file(head)
         head_rank = chess.square_rank(head)
 
-        xtail = margin + (tail_file + 0.5 if orientation else 7.5 - tail_file) * SQUARE_SIZE
-        ytail = margin + (7.5 - tail_rank if orientation else tail_rank + 0.5) * SQUARE_SIZE
-        xhead = margin + (head_file + 0.5 if orientation else 7.5 - head_file) * SQUARE_SIZE
-        yhead = margin + (7.5 - head_rank if orientation else head_rank + 0.5) * SQUARE_SIZE
+        xtail = margin + (tail_file + 0.5 if orientation else 5.5 - tail_file) * SQUARE_SIZE
+        ytail = margin + (5.5 - tail_rank if orientation else tail_rank + 0.5) * SQUARE_SIZE
+        xhead = margin + (head_file + 0.5 if orientation else 5.5 - head_file) * SQUARE_SIZE
+        yhead = margin + (5.5 - head_rank if orientation else head_rank + 0.5) * SQUARE_SIZE
 
         if (head_file, head_rank) == (tail_file, tail_rank):
             ET.SubElement(svg, "circle", _attrs({
@@ -422,7 +422,7 @@ def board(board: Optional[chess.BaseBoard] = None, *,
                 "class": "circle",
             }))
         else:
-            marker_size = 0.75 * SQUARE_SIZE
+            marker_size = 0.55 * SQUARE_SIZE
             marker_margin = 0.1 * SQUARE_SIZE
 
             dx, dy = xhead - xtail, yhead - ytail
