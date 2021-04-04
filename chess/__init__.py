@@ -276,16 +276,16 @@ except AttributeError:
 
 
 def shift_down(b: Bitboard) -> Bitboard:
-    return b >> 8
+    return b >> 5 
 
 def shift_2_down(b: Bitboard) -> Bitboard:
-    return b >> 16
+    return b >> 10
 
 def shift_up(b: Bitboard) -> Bitboard:
-    return (b << 8) & BB_ALL
+    return (b << 5) & BB_ALL
 
 def shift_2_up(b: Bitboard) -> Bitboard:
-    return (b << 16) & BB_ALL
+    return (b << 10) & BB_ALL
 
 def shift_right(b: Bitboard) -> Bitboard:
     return (b << 1) & ~BB_FILE_A & BB_ALL
@@ -294,22 +294,22 @@ def shift_2_right(b: Bitboard) -> Bitboard:
     return (b << 2) & ~BB_FILE_A & ~BB_FILE_B & BB_ALL
 
 def shift_left(b: Bitboard) -> Bitboard:
-    return (b >> 1) & ~BB_FILE_H
+    return (b >> 1) & ~BB_FILE_E
 
 def shift_2_left(b: Bitboard) -> Bitboard:
-    return (b >> 2) & ~BB_FILE_G & ~BB_FILE_H
+    return (b >> 2) & ~BB_FILE_D & ~BB_FILE_E
 
 def shift_up_left(b: Bitboard) -> Bitboard:
-    return (b << 7) & ~BB_FILE_H & BB_ALL
+    return (b << 4) & ~BB_FILE_E & BB_ALL
 
 def shift_up_right(b: Bitboard) -> Bitboard:
-    return (b << 9) & ~BB_FILE_A & BB_ALL
+    return (b << 6) & ~BB_FILE_A & BB_ALL
 
 def shift_down_left(b: Bitboard) -> Bitboard:
-    return (b >> 9) & ~BB_FILE_H
+    return (b >> 6) & ~BB_FILE_E
 
 def shift_down_right(b: Bitboard) -> Bitboard:
-    return (b >> 7) & ~BB_FILE_A
+    return (b >> 4) & ~BB_FILE_A
 
 
 def _sliding_attacks(square: Square, occupied: Bitboard, deltas: Iterable[int]) -> Bitboard:
@@ -320,7 +320,7 @@ def _sliding_attacks(square: Square, occupied: Bitboard, deltas: Iterable[int]) 
 
         while True:
             sq += delta
-            if not (0 <= sq < 64) or square_distance(sq, sq - delta) > 2:
+            if not (0 <= sq < 30) or square_distance(sq, sq - delta) > 2:
                 break
 
             attacks |= BB_SQUARES[sq]
