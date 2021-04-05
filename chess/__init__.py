@@ -1630,7 +1630,7 @@ class Board(BaseBoard):
                 self.occupied_co[not self.turn] & to_mask)
 
             for to_square in scan_reversed(targets):
-                if square_rank(to_square) in [0, 7]:
+                if square_rank(to_square) in [0, 5]:
                     yield Move(from_square, to_square, QUEEN)
                     yield Move(from_square, to_square, ROOK)
                     yield Move(from_square, to_square, BISHOP)
@@ -1640,20 +1640,20 @@ class Board(BaseBoard):
 
         # Prepare pawn advance generation.
         if self.turn == WHITE:
-            single_moves = pawns << 8 & ~self.occupied
-            double_moves = single_moves << 8 & ~self.occupied & (BB_RANK_3 | BB_RANK_4)
+            single_moves = pawns << 5 & ~self.occupied
+#             double_moves = single_moves << 5 & ~self.occupied & (BB_RANK_3 | BB_RANK_4)
         else:
-            single_moves = pawns >> 8 & ~self.occupied
-            double_moves = single_moves >> 8 & ~self.occupied & (BB_RANK_6 | BB_RANK_5)
+            single_moves = pawns >> 5 & ~self.occupied
+#             double_moves = single_moves >> 5 & ~self.occupied & (BB_RANK_6 | BB_RANK_5)
 
         single_moves &= to_mask
-        double_moves &= to_mask
+#         double_moves &= to_mask
 
         # Generate single pawn moves.
         for to_square in scan_reversed(single_moves):
-            from_square = to_square + (8 if self.turn == BLACK else -8)
+            from_square = to_square + (5 if self.turn == BLACK else -5)
 
-            if square_rank(to_square) in [0, 7]:
+            if square_rank(to_square) in [0, 5]:
                 yield Move(from_square, to_square, QUEEN)
                 yield Move(from_square, to_square, ROOK)
                 yield Move(from_square, to_square, BISHOP)
@@ -1661,14 +1661,14 @@ class Board(BaseBoard):
             else:
                 yield Move(from_square, to_square)
 
-        # Generate double pawn moves.
-        for to_square in scan_reversed(double_moves):
-            from_square = to_square + (16 if self.turn == BLACK else -16)
-            yield Move(from_square, to_square)
-
-        # Generate en passant captures.
-        if self.ep_square:
-            yield from self.generate_pseudo_legal_ep(from_mask, to_mask)
+#         # Generate double pawn moves.
+#         for to_square in scan_reversed(double_moves):
+#             from_square = to_square + (16 if self.turn == BLACK else -16)
+#             yield Move(from_square, to_square)
+# 
+#         # Generate en passant captures.
+#         if self.ep_square:
+#             yield from self.generate_pseudo_legal_ep(from_mask, to_mask)
 
     def generate_pseudo_legal_ep(self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL) -> Iterator[Move]:
         if not self.ep_square or not BB_SQUARES[self.ep_square] & to_mask:
