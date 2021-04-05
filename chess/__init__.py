@@ -1426,7 +1426,7 @@ class Board(BaseBoard):
     >>> import chess
     >>>
     >>> board = chess.Board()
-    >>> bool(board.castling_rights & chess.BB_E1)  # White can castle with the h1 rook
+    >>> bool(board.castling_rights & chess.BB_H1)  # White can castle with the h1 rook
     True
 
     To add a specific square:
@@ -2177,10 +2177,10 @@ class Board(BaseBoard):
             if self.turn == WHITE:
                 self.castling_rights &= ~BB_RANK_1
             else:
-                self.castling_rights &= ~BB_RANK_6
+                self.castling_rights &= ~BB_RANK_8
         elif captured_piece_type == KING and not self.promoted & to_bb:
             if self.turn == WHITE and square_rank(move.to_square) == 7:
-                self.castling_rights &= ~BB_RANK_6
+                self.castling_rights &= ~BB_RANK_8
             elif self.turn == BLACK and square_rank(move.to_square) == 0:
                 self.castling_rights &= ~BB_RANK_1
 
@@ -2279,7 +2279,7 @@ class Board(BaseBoard):
         for square in scan_reversed(castling_rights & BB_RANK_1):
             builder.append(FILE_NAMES[square_file(square)].upper())
 
-        for square in scan_reversed(castling_rights & BB_RANK_6):
+        for square in scan_reversed(castling_rights & BB_RANK_8):
             builder.append(FILE_NAMES[square_file(square)])
 
         return "".join(builder)
@@ -2293,7 +2293,7 @@ class Board(BaseBoard):
                 continue
 
             king_file = square_file(king)
-            backrank = BB_RANK_1 if color == WHITE else BB_RANK_6
+            backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
 
             for rook_square in scan_reversed(self.clean_castling_rights() & backrank):
                 rook_file = square_file(rook_square)
@@ -2467,7 +2467,7 @@ class Board(BaseBoard):
         for flag in castling_fen:
             color = WHITE if flag.isupper() else BLACK
             flag = flag.lower()
-            backrank = BB_RANK_1 if color == WHITE else BB_RANK_6
+            backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
             rooks = self.occupied_co[color] & self.rooks & backrank
             king = self.king(color)
 
@@ -3089,7 +3089,7 @@ class Board(BaseBoard):
         touched = BB_SQUARES[move.from_square] ^ BB_SQUARES[move.to_square]
         return bool(touched & cr or
                     cr & BB_RANK_1 and touched & self.kings & self.occupied_co[WHITE] & ~self.promoted or
-                    cr & BB_RANK_6 and touched & self.kings & self.occupied_co[BLACK] & ~self.promoted)
+                    cr & BB_RANK_8 and touched & self.kings & self.occupied_co[BLACK] & ~self.promoted)
 
     def is_irreversible(self, move: Move) -> bool:
         """
@@ -3135,24 +3135,24 @@ class Board(BaseBoard):
 
         castling = self.castling_rights & self.rooks
         white_castling = castling & BB_RANK_1 & self.occupied_co[WHITE]
-        black_castling = castling & BB_RANK_6 & self.occupied_co[BLACK]
+        black_castling = castling & BB_RANK_8 & self.occupied_co[BLACK]
 
         if not self.chess960:
             # The rooks must be on a1, h1, a8 or h8.
-            white_castling &= (BB_A1 | BB_E1)
-            black_castling &= (BB_A6 | BB_E6)
+            white_castling &= (BB_A1 | BB_H1)
+            black_castling &= (BB_A8 | BB_H8)
 
             # The kings must be on e1 or e8.
             if not self.occupied_co[WHITE] & self.kings & ~self.promoted & BB_E1:
                 white_castling = 0
-            if not self.occupied_co[BLACK] & self.kings & ~self.promoted & BB_E6:
+            if not self.occupied_co[BLACK] & self.kings & ~self.promoted & BB_E8:
                 black_castling = 0
 
             return white_castling | black_castling
         else:
             # The kings must be on the back rank.
             white_king_mask = self.occupied_co[WHITE] & self.kings & BB_RANK_1 & ~self.promoted
-            black_king_mask = self.occupied_co[BLACK] & self.kings & BB_RANK_6 & ~self.promoted
+            black_king_mask = self.occupied_co[BLACK] & self.kings & BB_RANK_8 & ~self.promoted
             if not white_king_mask:
                 white_castling = 0
             if not black_king_mask:
@@ -3181,7 +3181,7 @@ class Board(BaseBoard):
 
     def has_castling_rights(self, color: Color) -> bool:
         """Checks if the given side has castling rights."""
-        backrank = BB_RANK_1 if color == WHITE else BB_RANK_6
+        backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
         return bool(self.clean_castling_rights() & backrank)
 
     def has_kingside_castling_rights(self, color: Color) -> bool:
@@ -3189,7 +3189,7 @@ class Board(BaseBoard):
         Checks if the given side has kingside (that is h-side in Chess960)
         castling rights.
         """
-        backrank = BB_RANK_1 if color == WHITE else BB_RANK_6
+        backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
         king_mask = self.kings & self.occupied_co[color] & backrank & ~self.promoted
         if not king_mask:
             return False
@@ -3210,7 +3210,7 @@ class Board(BaseBoard):
         Checks if the given side has queenside (that is a-side in Chess960)
         castling rights.
         """
-        backrank = BB_RANK_1 if color == WHITE else BB_RANK_6
+        backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
         king_mask = self.kings & self.occupied_co[color] & backrank & ~self.promoted
         if not king_mask:
             return False
@@ -3245,7 +3245,7 @@ class Board(BaseBoard):
         # on e1 or e8.
         if castling_rights & BB_RANK_1 and not self.occupied_co[WHITE] & self.kings & BB_E1:
             return True
-        if castling_rights & BB_RANK_6 and not self.occupied_co[BLACK] & self.kings & BB_E6:
+        if castling_rights & BB_RANK_8 and not self.occupied_co[BLACK] & self.kings & BB_E8:
             return True
 
         return False
@@ -3496,7 +3496,7 @@ class Board(BaseBoard):
         if self.is_variant_end():
             return
 
-        backrank = BB_RANK_1 if self.turn == WHITE else BB_RANK_6
+        backrank = BB_RANK_1 if self.turn == WHITE else BB_RANK_8
         king = self.occupied_co[self.turn] & self.kings & ~self.promoted & backrank & from_mask
         king = king & -king
         if not king:
@@ -3529,11 +3529,11 @@ class Board(BaseBoard):
                     return Move(E1, G1)
                 elif to_square == A1:
                     return Move(E1, C1)
-            elif from_square == E6 and self.kings & BB_E6:
-                if to_square == E6:
-                    return Move(E6, G8)
+            elif from_square == E8 and self.kings & BB_E8:
+                if to_square == H8:
+                    return Move(E8, G8)
                 elif to_square == A8:
-                    return Move(E6, C8)
+                    return Move(E8, C8)
 
         return Move(from_square, to_square, promotion, drop)
 
@@ -3543,11 +3543,11 @@ class Board(BaseBoard):
                 return Move(E1, H1)
             elif move.to_square == C1 and not self.rooks & BB_C1:
                 return Move(E1, A1)
-        elif move.from_square == E6 and self.kings & BB_E6:
+        elif move.from_square == E8 and self.kings & BB_E8:
             if move.to_square == G8 and not self.rooks & BB_G8:
-                return Move(E6, E6)
+                return Move(E8, H8)
             elif move.to_square == C8 and not self.rooks & BB_C8:
-                return Move(E6, A8)
+                return Move(E8, A8)
 
         return move
 
