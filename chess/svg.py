@@ -168,12 +168,12 @@ def _svg(viewbox: int, size: Optional[int]) -> ET.Element:
         "xmlns": "http://www.w3.org/2000/svg",
         "version": "1.1",
         "xmlns:xlink": "http://www.w3.org/1999/xlink",
-        "viewBox": f"0 0 {viewbox:d} {viewbox:d}",
+        "viewBox": f"0 0 {viewbox[0]:d} {viewbox[1]:d}",
     })
 
     if size is not None:
-        svg.set("width", str(size))
-        svg.set("height", str(size))
+        svg.set("width", str(int(size[0] * 5 / 6)))
+        svg.set("height", str(size[1]))
 
     return svg
 
@@ -280,7 +280,9 @@ def board(board: Optional[chess.BaseBoard] = None, *,
     """
     orientation ^= flipped
     margin = 11 if coordinates else 0
-    svg = _svg(6 * SQUARE_SIZE + 2 * margin, size)
+    viewbox = (5 * SQUARE_SIZE + 2 * margin, 6 * SQUARE_SIZE + 2 * margin)
+    size = (250, 300) 
+    svg = _svg(viewbox, size)
 
     if style:
         ET.SubElement(svg, "style").text = style
