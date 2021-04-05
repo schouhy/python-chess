@@ -202,7 +202,7 @@ BB_FILES = [
     BB_FILE_C,
     BB_FILE_D,
     BB_FILE_E
-] = [0x0101_0101_0101_0101 << i for i in range(5)]
+] = [0x2108421 << i for i in range(5)]
 
 BB_RANKS = [
     BB_RANK_1,
@@ -1613,9 +1613,9 @@ class Board(BaseBoard):
             for to_square in scan_reversed(moves):
                 yield Move(from_square, to_square)
 
-        # Generate castling moves.
-        if from_mask & self.kings:
-            yield from self.generate_castling_moves(from_mask, to_mask)
+#         # Generate castling moves.
+#         if from_mask & self.kings:
+#             yield from self.generate_castling_moves(from_mask, to_mask)
 
         # The remaining moves are all pawn moves.
         pawns = self.pawns & self.occupied_co[self.turn] & from_mask
@@ -2134,7 +2134,7 @@ class Board(BaseBoard):
         # Push move and remember board state.
         move = self._to_chess960(move)
         board_state = self._board_state()
-        self.castling_rights = self.clean_castling_rights()  # Before pushing stack
+#         self.castling_rights = self.clean_castling_rights()  # Before pushing stack
         self.move_stack.append(self._from_chess960(self.chess960, move.from_square, move.to_square, move.promotion, move.drop))
         self._stack.append(board_state)
 
@@ -2620,7 +2620,7 @@ class Board(BaseBoard):
 
         epd = [self.board_fen(promoted=promoted),
                "w" if self.turn == WHITE else "b",
-               self.castling_shredder_fen() if shredder else self.castling_xfen(),
+#               self.castling_shredder_fen() if shredder else self.castling_xfen(),
                SQUARE_NAMES[ep_square] if ep_square is not None else "-"]
 
         if operations:
@@ -3523,32 +3523,32 @@ class Board(BaseBoard):
                 yield self._from_chess960(self.chess960, msb(king), candidate)
 
     def _from_chess960(self, chess960: bool, from_square: Square, to_square: Square, promotion: Optional[PieceType] = None, drop: Optional[PieceType] = None) -> Move:
-        if not chess960 and promotion is None and drop is None:
-            if from_square == E1 and self.kings & BB_E1:
-                if to_square == H1:
-                    return Move(E1, G1)
-                elif to_square == A1:
-                    return Move(E1, C1)
-            elif from_square == E8 and self.kings & BB_E8:
-                if to_square == H8:
-                    return Move(E8, G8)
-                elif to_square == A8:
-                    return Move(E8, C8)
-
+#         if not chess960 and promotion is None and drop is None:
+#             if from_square == E1 and self.kings & BB_E1:
+#                 if to_square == H1:
+#                     return Move(E1, G1)
+#                 elif to_square == A1:
+#                     return Move(E1, C1)
+#             elif from_square == E8 and self.kings & BB_E8:
+#                 if to_square == H8:
+#                     return Move(E8, G8)
+#                 elif to_square == A8:
+#                     return Move(E8, C8)
+# 
         return Move(from_square, to_square, promotion, drop)
 
     def _to_chess960(self, move: Move) -> Move:
-        if move.from_square == E1 and self.kings & BB_E1:
-            if move.to_square == G1 and not self.rooks & BB_G1:
-                return Move(E1, H1)
-            elif move.to_square == C1 and not self.rooks & BB_C1:
-                return Move(E1, A1)
-        elif move.from_square == E8 and self.kings & BB_E8:
-            if move.to_square == G8 and not self.rooks & BB_G8:
-                return Move(E8, H8)
-            elif move.to_square == C8 and not self.rooks & BB_C8:
-                return Move(E8, A8)
-
+#         if move.from_square == E1 and self.kings & BB_E1:
+#             if move.to_square == G1 and not self.rooks & BB_G1:
+#                 return Move(E1, H1)
+#             elif move.to_square == C1 and not self.rooks & BB_C1:
+#                 return Move(E1, A1)
+#         elif move.from_square == E8 and self.kings & BB_E8:
+#             if move.to_square == G8 and not self.rooks & BB_G8:
+#                 return Move(E8, H8)
+#             elif move.to_square == C8 and not self.rooks & BB_C8:
+#                 return Move(E8, A8)
+# 
         return move
 
     def _transposition_key(self) -> Hashable:
