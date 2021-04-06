@@ -76,10 +76,10 @@ FILE_NAMES = ["a", "b", "c", "d", "e"]
 
 RANK_NAMES = ["1", "2", "3", "4", "5", "6"]
 
-STARTING_FEN = "rnbqk/ppppp/6/6/6/6/PPPPP/RNBQK w KQkq - 0 1"
+STARTING_FEN = "rnbqk/ppppp/6/6/6/6/PPPPP/KQBNR w KQkq - 0 1"
 """The FEN for the standard chess starting position."""
 
-STARTING_BOARD_FEN = "rnbqk/ppppp/6/6/6/6/PPPPP/RNBQK"
+STARTING_BOARD_FEN = "rnbqk/ppppp/6/6/6/6/PPPPP/KQBNR"
 """The board part of the FEN for the standard chess starting position."""
 
 
@@ -333,7 +333,6 @@ def _sliding_attacks(square: Square, occupied: Bitboard, deltas: Iterable[int]) 
 
 def _step_attacks(square: Square, deltas: Iterable[int]) -> Bitboard:
     return _sliding_attacks(square, BB_ALL, deltas)
-
 BB_KNIGHT_ATTACKS = [_step_attacks(sq, [11, 9, 7, 3, -11, -9, -7, -3]) for sq in SQUARES]
 BB_KING_ATTACKS = [_step_attacks(sq, [6, 5, 4, 1, -6, -5, -4, -1]) for sq in SQUARES]
 BB_PAWN_ATTACKS = [[_step_attacks(sq, deltas) for sq in SQUARES] for deltas in [[-4, -6], [4, 6]]]
@@ -349,8 +348,7 @@ def _carry_rippler(mask: Bitboard) -> Iterator[Bitboard]:
     while True:
         yield subset
         subset = (subset - mask) & mask
-        if not subset:
-            break
+        if not subset: break
 
 def _attack_table(deltas: List[int]) -> Tuple[List[Bitboard], List[Dict[Bitboard, Bitboard]]]:
     mask_table = []
@@ -572,7 +570,7 @@ class BaseBoard:
         self.bishops = BB_C1 | BB_C6 
         self.rooks = BB_A1 | BB_E6 
         self.queens = BB_D1 | BB_B6 
-        self.kings = BB_E1 | BB_E6
+        self.kings = BB_E1 | BB_A6
 
         self.promoted = BB_EMPTY
 
@@ -2171,60 +2169,60 @@ class Board(BaseBoard):
         capture_square = move.to_square
         captured_piece_type = self.piece_type_at(capture_square)
 
-        # Update castling rights.
-        self.castling_rights &= ~to_bb & ~from_bb
-        if piece_type == KING and not promoted:
-            if self.turn == WHITE:
-                self.castling_rights &= ~BB_RANK_1
-            else:
-                self.castling_rights &= ~BB_RANK_8
-        elif captured_piece_type == KING and not self.promoted & to_bb:
-            if self.turn == WHITE and square_rank(move.to_square) == 7:
-                self.castling_rights &= ~BB_RANK_8
-            elif self.turn == BLACK and square_rank(move.to_square) == 0:
-                self.castling_rights &= ~BB_RANK_1
+#         # Update castling rights.
+#         self.castling_rights &= ~to_bb & ~from_bb
+#         if piece_type == KING and not promoted:
+#             if self.turn == WHITE:
+#                 self.castling_rights &= ~BB_RANK_1
+#             else:
+#                 self.castling_rights &= ~BB_RANK_8
+#         elif captured_piece_type == KING and not self.promoted & to_bb:
+#             if self.turn == WHITE and square_rank(move.to_square) == 7:
+#                 self.castling_rights &= ~BB_RANK_8
+#             elif self.turn == BLACK and square_rank(move.to_square) == 0:
+#                 self.castling_rights &= ~BB_RANK_1
 
-        # Handle special pawn moves.
-        if piece_type == PAWN:
-            diff = move.to_square - move.from_square
-
-            if diff == 16 and square_rank(move.from_square) == 1:
-                self.ep_square = move.from_square + 8
-            elif diff == -16 and square_rank(move.from_square) == 6:
-                self.ep_square = move.from_square - 8
-            elif move.to_square == ep_square and abs(diff) in [7, 9] and not captured_piece_type:
-                # Remove pawns captured en passant.
-                down = -8 if self.turn == WHITE else 8
-                capture_square = ep_square + down
-                captured_piece_type = self._remove_piece_at(capture_square)
+#         # Handle special pawn moves.
+#         if piece_type == PAWN:
+#             diff = move.to_square - move.from_square
+# 
+#             if diff == 16 and square_rank(move.from_square) == 1:
+#                 self.ep_square = move.from_square + 8
+#             elif diff == -16 and square_rank(move.from_square) == 6:
+#                 self.ep_square = move.from_square - 8
+#             elif move.to_square == ep_square and abs(diff) in [7, 9] and not captured_piece_type:
+#                 # Remove pawns captured en passant.
+#                 down = -8 if self.turn == WHITE else 8
+#                 capture_square = ep_square + down
+#                 captured_piece_type = self._remove_piece_at(capture_square)
 
         # Promotion.
         if move.promotion:
             promoted = True
             piece_type = move.promotion
 
-        # Castling.
-        castling = piece_type == KING and self.occupied_co[self.turn] & to_bb
-        if castling:
-            a_side = square_file(move.to_square) < square_file(move.from_square)
-
-            self._remove_piece_at(move.from_square)
-            self._remove_piece_at(move.to_square)
-
-            if a_side:
-                self._set_piece_at(C1 if self.turn == WHITE else C8, KING, self.turn)
-                self._set_piece_at(D1 if self.turn == WHITE else D8, ROOK, self.turn)
-            else:
-                self._set_piece_at(G1 if self.turn == WHITE else G8, KING, self.turn)
-                self._set_piece_at(F1 if self.turn == WHITE else F8, ROOK, self.turn)
+#         # Castling.
+#         castling = piece_type == KING and self.occupied_co[self.turn] & to_bb
+#         if castling:
+#             a_side = square_file(move.to_square) < square_file(move.from_square)
+# 
+#             self._remove_piece_at(move.from_square)
+#             self._remove_piece_at(move.to_square)
+# 
+#             if a_side:
+#                 self._set_piece_at(C1 if self.turn == WHITE else C8, KING, self.turn)
+#                 self._set_piece_at(D1 if self.turn == WHITE else D8, ROOK, self.turn)
+#             else:
+#                 self._set_piece_at(G1 if self.turn == WHITE else G8, KING, self.turn)
+#                 self._set_piece_at(F1 if self.turn == WHITE else F8, ROOK, self.turn)
 
         # Put the piece on the target square.
-        if not castling:
-            was_promoted = bool(self.promoted & to_bb)
-            self._set_piece_at(move.to_square, piece_type, self.turn, promoted)
+#         if not castling:
+        was_promoted = bool(self.promoted & to_bb)
+        self._set_piece_at(move.to_square, piece_type, self.turn, promoted)
 
-            if captured_piece_type:
-                self._push_capture(move, capture_square, captured_piece_type, was_promoted)
+        if captured_piece_type:
+            self._push_capture(move, capture_square, captured_piece_type, was_promoted)
 
         # Swap turn.
         self.turn = not self.turn
@@ -3452,7 +3450,7 @@ class Board(BaseBoard):
             # Capture the checking pawn en passant (but avoid yielding
             # duplicate moves).
             if self.ep_square and not BB_SQUARES[self.ep_square] & target:
-                last_double = self.ep_square + (-8 if self.turn == WHITE else 8)
+                last_double = self.ep_square + (-5 if self.turn == WHITE else 5)
                 if last_double == checker:
                     yield from self.generate_pseudo_legal_ep(from_mask, to_mask)
 
