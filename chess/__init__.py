@@ -1340,7 +1340,7 @@ class _BoardState(Generic[BoardT]):
 
         self.turn = board.turn
         self.castling_rights = board.castling_rights
-        self.ep_square = board.ep_square
+#        self.ep_square = board.ep_square
         self.halfmove_clock = board.halfmove_clock
         self.fullmove_number = board.fullmove_number
 
@@ -1360,7 +1360,7 @@ class _BoardState(Generic[BoardT]):
 
         board.turn = self.turn
         board.castling_rights = self.castling_rights
-        board.ep_square = self.ep_square
+#         board.ep_square = self.ep_square
         board.halfmove_clock = self.halfmove_clock
         board.fullmove_number = self.fullmove_number
 
@@ -1439,13 +1439,13 @@ class Board(BaseBoard):
     :func:`~chess.Board.clean_castling_rights()`.
     """
 
-    ep_square: Optional[Square]
-    """
-    The potential en passant square on the third or sixth rank or ``None``.
-
-    Use :func:`~chess.Board.has_legal_en_passant()` to test if en passant
-    capturing would actually be possible on the next move.
-    """
+#     ep_square: Optional[Square]
+#     """
+#     The potential en passant square on the third or sixth rank or ``None``.
+# 
+#     Use :func:`~chess.Board.has_legal_en_passant()` to test if en passant
+#     capturing would actually be possible on the next move.
+#     """
 
     fullmove_number: int
     """
@@ -1479,7 +1479,7 @@ class Board(BaseBoard):
 
         self.chess960 = chess960
 
-        self.ep_square = None
+#         self.ep_square = None
         self.move_stack = []
         self._stack: List[_BoardState[BoardT]] = []
 
@@ -1529,7 +1529,7 @@ class Board(BaseBoard):
         """Restores the starting position."""
         self.turn = WHITE
         self.castling_rights = BB_CORNERS
-        self.ep_square = None
+#         self.ep_square = None
         self.halfmove_clock = 0
         self.fullmove_number = 1
 
@@ -1556,7 +1556,7 @@ class Board(BaseBoard):
         """
         self.turn = WHITE
         self.castling_rights = BB_EMPTY
-        self.ep_square = None
+#         self.ep_square = None
         self.halfmove_clock = 0
         self.fullmove_number = 1
 
@@ -1668,25 +1668,25 @@ class Board(BaseBoard):
 #         if self.ep_square:
 #             yield from self.generate_pseudo_legal_ep(from_mask, to_mask)
 
-    def generate_pseudo_legal_ep(self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL) -> Iterator[Move]:
-        if not self.ep_square or not BB_SQUARES[self.ep_square] & to_mask:
-            return
+#     def generate_pseudo_legal_ep(self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL) -> Iterator[Move]:
+#         if not self.ep_square or not BB_SQUARES[self.ep_square] & to_mask:
+#             return
+# 
+#         if BB_SQUARES[self.ep_square] & self.occupied:
+#             return
+# 
+#         capturers = (
+#             self.pawns & self.occupied_co[self.turn] & from_mask &
+#             BB_PAWN_ATTACKS[not self.turn][self.ep_square] &
+#             BB_RANKS[4 if self.turn else 3])
+# 
+#         for capturer in scan_reversed(capturers):
+#             yield Move(capturer, self.ep_square)
 
-        if BB_SQUARES[self.ep_square] & self.occupied:
-            return
-
-        capturers = (
-            self.pawns & self.occupied_co[self.turn] & from_mask &
-            BB_PAWN_ATTACKS[not self.turn][self.ep_square] &
-            BB_RANKS[4 if self.turn else 3])
-
-        for capturer in scan_reversed(capturers):
-            yield Move(capturer, self.ep_square)
-
-    def generate_pseudo_legal_captures(self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL) -> Iterator[Move]:
-        return itertools.chain(
-            self.generate_pseudo_legal_moves(from_mask, to_mask & self.occupied_co[not self.turn]),
-            self.generate_pseudo_legal_ep(from_mask, to_mask))
+#     def generate_pseudo_legal_captures(self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL) -> Iterator[Move]:
+#         return itertools.chain(
+#             self.generate_pseudo_legal_moves(from_mask, to_mask & self.occupied_co[not self.turn]),
+#             self.generate_pseudo_legal_ep(from_mask, to_mask))
 
     def checkers_mask(self) -> Bitboard:
         king = self.king(self.turn)
@@ -2136,9 +2136,9 @@ class Board(BaseBoard):
         self.move_stack.append(self._from_chess960(self.chess960, move.from_square, move.to_square, move.promotion, move.drop))
         self._stack.append(board_state)
 
-        # Reset en passant square.
-        ep_square = self.ep_square
-        self.ep_square = None
+#         # Reset en passant square.
+#         ep_square = self.ep_square
+#         self.ep_square = None
 
         # Increment move counters.
         self.halfmove_clock += 1
@@ -2311,13 +2311,13 @@ class Board(BaseBoard):
         else:
             return "-"
 
-    def has_pseudo_legal_en_passant(self) -> bool:
-        """Checks if there is a pseudo-legal en passant capture."""
-        return self.ep_square is not None and any(self.generate_pseudo_legal_ep())
-
-    def has_legal_en_passant(self) -> bool:
-        """Checks if there is a legal en passant capture."""
-        return self.ep_square is not None and any(self.generate_legal_ep())
+#     def has_pseudo_legal_en_passant(self) -> bool:
+#         """Checks if there is a pseudo-legal en passant capture."""
+#         return self.ep_square is not None and any(self.generate_pseudo_legal_ep())
+# 
+#     def has_legal_en_passant(self) -> bool:
+#         """Checks if there is a legal en passant capture."""
+#         return self.ep_square is not None and any(self.generate_legal_ep())
 
     def fen(self, *, shredder: bool = False, en_passant: _EnPassantSpec = "legal", promoted: Optional[bool] = None) -> str:
         """
@@ -2395,16 +2395,16 @@ class Board(BaseBoard):
             if not FEN_CASTLING_REGEX.match(castling_part):
                 raise ValueError(f"invalid castling part in fen: {fen!r}")
 
-        # En passant square.
-        try:
-            ep_part = parts.pop(0)
-        except IndexError:
-            ep_square = None
-        else:
-            try:
-                ep_square = None if ep_part == "-" else SQUARE_NAMES.index(ep_part)
-            except ValueError:
-                raise ValueError(f"invalid en passant part in fen: {fen!r}")
+#         # En passant square.
+#         try:
+#             ep_part = parts.pop(0)
+#         except IndexError:
+#             ep_square = None
+#         else:
+#             try:
+#                 ep_square = None if ep_part == "-" else SQUARE_NAMES.index(ep_part)
+#             except ValueError:
+#                 raise ValueError(f"invalid en passant part in fen: {fen!r}")
 
         # Check that the half-move part is valid.
         try:
@@ -2447,7 +2447,7 @@ class Board(BaseBoard):
         # Apply.
         self.turn = turn
         self._set_castling_fen(castling_part)
-        self.ep_square = ep_square
+#         self.ep_square = ep_square
         self.halfmove_clock = halfmove_clock
         self.fullmove_number = fullmove_number
         self.clear_stack()
@@ -2609,17 +2609,17 @@ class Board(BaseBoard):
         >>> board.epd(hmvc=board.halfmove_clock, fmvn=board.fullmove_number)
         'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - hmvc 0; fmvn 1;'
         """
-        if en_passant == "fen":
-            ep_square = self.ep_square
-        elif en_passant == "xfen":
-            ep_square = self.ep_square if self.has_pseudo_legal_en_passant() else None
-        else:
-            ep_square = self.ep_square if self.has_legal_en_passant() else None
+#         if en_passant == "fen":
+#             ep_square = self.ep_square
+#         elif en_passant == "xfen":
+#             ep_square = self.ep_square if self.has_pseudo_legal_en_passant() else None
+#         else:
+#             ep_square = self.ep_square if self.has_legal_en_passant() else None
 
         epd = [self.board_fen(promoted=promoted),
-               "w" if self.turn == WHITE else "b",
+               "w" if self.turn == WHITE else "b"]
 #               self.castling_shredder_fen() if shredder else self.castling_xfen(),
-               SQUARE_NAMES[ep_square] if ep_square is not None else "-"]
+#                SQUARE_NAMES[ep_square] if ep_square is not None else "-"]
 
         if operations:
             epd.append(self._epd_operations(operations))
@@ -2816,12 +2816,12 @@ class Board(BaseBoard):
             san += "@" + SQUARE_NAMES[move.to_square]
             return san
 
-        # Castling.
-        if self.is_castling(move):
-            if square_file(move.to_square) < square_file(move.from_square):
-                return "O-O-O"
-            else:
-                return "O-O"
+#         # Castling.
+#         if self.is_castling(move):
+#             if square_file(move.to_square) < square_file(move.from_square):
+#                 return "O-O-O"
+#             else:
+#                 return "O-O"
 
         piece_type = self.piece_type_at(move.from_square)
         assert piece_type, f"san() and lan() expect move to be legal or null, but got {move} in {self.fen()}"
@@ -3065,17 +3065,17 @@ class Board(BaseBoard):
 
     push_xboard = push_san
 
-    def is_en_passant(self, move: Move) -> bool:
-        """Checks if the given pseudo-legal move is an en passant capture."""
-        return (self.ep_square == move.to_square and
-                bool(self.pawns & BB_SQUARES[move.from_square]) and
-                abs(move.to_square - move.from_square) in [7, 9] and
-                not self.occupied & BB_SQUARES[move.to_square])
+#     def is_en_passant(self, move: Move) -> bool:
+#         """Checks if the given pseudo-legal move is an en passant capture."""
+#         return (self.ep_square == move.to_square and
+#                 bool(self.pawns & BB_SQUARES[move.from_square]) and
+#                 abs(move.to_square - move.from_square) in [7, 9] and
+#                 not self.occupied & BB_SQUARES[move.to_square])
 
     def is_capture(self, move: Move) -> bool:
         """Checks if the given pseudo-legal move is a capture."""
         touched = BB_SQUARES[move.from_square] ^ BB_SQUARES[move.to_square]
-        return bool(touched & self.occupied_co[not self.turn]) or self.is_en_passant(move)
+        return bool(touched & self.occupied_co[not self.turn])#  or self.is_en_passant(move)
 
     def is_zeroing(self, move: Move) -> bool:
         """Checks if the given pseudo-legal move is a capture or pawn move."""
@@ -3309,10 +3309,10 @@ class Board(BaseBoard):
         if self.castling_rights != self.clean_castling_rights():
             errors |= STATUS_BAD_CASTLING_RIGHTS
 
-        # En passant.
-        valid_ep_square = self._valid_ep_square()
-        if self.ep_square != valid_ep_square:
-            errors |= STATUS_INVALID_EP_SQUARE
+#         # En passant.
+#         valid_ep_square = self._valid_ep_square()
+#         if self.ep_square != valid_ep_square:
+#             errors |= STATUS_INVALID_EP_SQUARE
 
         # Side to move giving check.
         if self.was_into_check():
@@ -3325,42 +3325,42 @@ class Board(BaseBoard):
             errors |= STATUS_TOO_MANY_CHECKERS
         elif popcount(checkers) == 2 and ray(lsb(checkers), msb(checkers)) & our_kings:
             errors |= STATUS_IMPOSSIBLE_CHECK
-        elif valid_ep_square is not None and any(ray(checker, valid_ep_square) & our_kings for checker in scan_reversed(checkers)):
-            errors |= STATUS_IMPOSSIBLE_CHECK
+#         elif valid_ep_square is not None and any(ray(checker, valid_ep_square) & our_kings for checker in scan_reversed(checkers)):
+#             errors |= STATUS_IMPOSSIBLE_CHECK
 
         return errors
 
-    def _valid_ep_square(self) -> Optional[Square]:
-        if not self.ep_square:
-            return None
-
-        if self.turn == WHITE:
-            ep_rank = 5
-            pawn_mask = shift_down(BB_SQUARES[self.ep_square])
-            seventh_rank_mask = shift_up(BB_SQUARES[self.ep_square])
-        else:
-            ep_rank = 2
-            pawn_mask = shift_up(BB_SQUARES[self.ep_square])
-            seventh_rank_mask = shift_down(BB_SQUARES[self.ep_square])
-
-        # The en passant square must be on the third or sixth rank.
-        if square_rank(self.ep_square) != ep_rank:
-            return None
-
-        # The last move must have been a double pawn push, so there must
-        # be a pawn of the correct color on the fourth or fifth rank.
-        if not self.pawns & self.occupied_co[not self.turn] & pawn_mask:
-            return None
-
-        # And the en passant square must be empty.
-        if self.occupied & BB_SQUARES[self.ep_square]:
-            return None
-
-        # And the second rank must be empty.
-        if self.occupied & seventh_rank_mask:
-            return None
-
-        return self.ep_square
+#     def _valid_ep_square(self) -> Optional[Square]:
+#         if not self.ep_square:
+#             return None
+# 
+#         if self.turn == WHITE:
+#             ep_rank = 5
+#             pawn_mask = shift_down(BB_SQUARES[self.ep_square])
+#             seventh_rank_mask = shift_up(BB_SQUARES[self.ep_square])
+#         else:
+#             ep_rank = 2
+#             pawn_mask = shift_up(BB_SQUARES[self.ep_square])
+#             seventh_rank_mask = shift_down(BB_SQUARES[self.ep_square])
+# 
+#         # The en passant square must be on the third or sixth rank.
+#         if square_rank(self.ep_square) != ep_rank:
+#             return None
+# 
+#         # The last move must have been a double pawn push, so there must
+#         # be a pawn of the correct color on the fourth or fifth rank.
+#         if not self.pawns & self.occupied_co[not self.turn] & pawn_mask:
+#             return None
+# 
+#         # And the en passant square must be empty.
+#         if self.occupied & BB_SQUARES[self.ep_square]:
+#             return None
+# 
+#         # And the second rank must be empty.
+#         if self.occupied & seventh_rank_mask:
+#             return None
+# 
+#         return self.ep_square
 
     def is_valid(self) -> bool:
         """
@@ -3370,32 +3370,32 @@ class Board(BaseBoard):
         """
         return self.status() == STATUS_VALID
 
-    def _ep_skewered(self, king: Square, capturer: Square) -> bool:
-        # Handle the special case where the king would be in check if the
-        # pawn and its capturer disappear from the rank.
-
-        # Vertical skewers of the captured pawn are not possible. (Pins on
-        # the capturer are not handled here.)
-        assert self.ep_square is not None
-
-        last_double = self.ep_square + (-8 if self.turn == WHITE else 8)
-
-        occupancy = (self.occupied & ~BB_SQUARES[last_double] &
-                     ~BB_SQUARES[capturer] | BB_SQUARES[self.ep_square])
-
-        # Horizontal attack on the fifth or fourth rank.
-        horizontal_attackers = self.occupied_co[not self.turn] & (self.rooks | self.queens)
-        if BB_RANK_ATTACKS[king][BB_RANK_MASKS[king] & occupancy] & horizontal_attackers:
-            return True
-
-        # Diagonal skewers. These are not actually possible in a real game,
-        # because if the latest double pawn move covers a diagonal attack,
-        # then the other side would have been in check already.
-        diagonal_attackers = self.occupied_co[not self.turn] & (self.bishops | self.queens)
-        if BB_DIAG_ATTACKS[king][BB_DIAG_MASKS[king] & occupancy] & diagonal_attackers:
-            return True
-
-        return False
+#     def _ep_skewered(self, king: Square, capturer: Square) -> bool:
+#         # Handle the special case where the king would be in check if the
+#         # pawn and its capturer disappear from the rank.
+# 
+#         # Vertical skewers of the captured pawn are not possible. (Pins on
+#         # the capturer are not handled here.)
+#         assert self.ep_square is not None
+# 
+#         last_double = self.ep_square + (-8 if self.turn == WHITE else 8)
+# 
+#         occupancy = (self.occupied & ~BB_SQUARES[last_double] &
+#                      ~BB_SQUARES[capturer] | BB_SQUARES[self.ep_square])
+# 
+#         # Horizontal attack on the fifth or fourth rank.
+#         horizontal_attackers = self.occupied_co[not self.turn] & (self.rooks | self.queens)
+#         if BB_RANK_ATTACKS[king][BB_RANK_MASKS[king] & occupancy] & horizontal_attackers:
+#             return True
+# 
+#         # Diagonal skewers. These are not actually possible in a real game,
+#         # because if the latest double pawn move covers a diagonal attack,
+#         # then the other side would have been in check already.
+#         diagonal_attackers = self.occupied_co[not self.turn] & (self.bishops | self.queens)
+#         if BB_DIAG_ATTACKS[king][BB_DIAG_MASKS[king] & occupancy] & diagonal_attackers:
+#             return True
+# 
+#         return False
 
     def _slider_blockers(self, king: Square) -> Bitboard:
         rooks_and_queens = self.rooks | self.queens
@@ -3447,12 +3447,12 @@ class Board(BaseBoard):
 
             yield from self.generate_pseudo_legal_moves(~self.kings & from_mask, target & to_mask)
 
-            # Capture the checking pawn en passant (but avoid yielding
-            # duplicate moves).
-            if self.ep_square and not BB_SQUARES[self.ep_square] & target:
-                last_double = self.ep_square + (-5 if self.turn == WHITE else 5)
-                if last_double == checker:
-                    yield from self.generate_pseudo_legal_ep(from_mask, to_mask)
+#             # Capture the checking pawn en passant (but avoid yielding
+#             # duplicate moves).
+#             if self.ep_square and not BB_SQUARES[self.ep_square] & target:
+#                 last_double = self.ep_square + (-5 if self.turn == WHITE else 5)
+#                 if last_double == checker:
+#                     yield from self.generate_pseudo_legal_ep(from_mask, to_mask)
 
     def generate_legal_moves(self, from_mask: Bitboard = BB_ALL, to_mask: Bitboard = BB_ALL) -> Iterator[Move]:
         if self.is_variant_end():
@@ -3553,8 +3553,8 @@ class Board(BaseBoard):
         return (self.pawns, self.knights, self.bishops, self.rooks,
                 self.queens, self.kings,
                 self.occupied_co[WHITE], self.occupied_co[BLACK],
-                self.turn,#  self.clean_castling_rights(),
-                self.ep_square if self.has_legal_en_passant() else None)
+                self.turn)# ,  self.clean_castling_rights(),
+#                 self.ep_square if self.has_legal_en_passant() else None)
 
     def __repr__(self) -> str:
         if not self.chess960:
@@ -3583,7 +3583,7 @@ class Board(BaseBoard):
     def apply_transform(self, f: Callable[[Bitboard], Bitboard]) -> None:
         super().apply_transform(f)
         self.clear_stack()
-        self.ep_square = None if self.ep_square is None else msb(f(BB_SQUARES[self.ep_square]))
+#         self.ep_square = None if self.ep_square is None else msb(f(BB_SQUARES[self.ep_square]))
         self.castling_rights = f(self.castling_rights)
 
     def transform(self: BoardT, f: Callable[[Bitboard], Bitboard]) -> BoardT:
@@ -3621,7 +3621,7 @@ class Board(BaseBoard):
 
         board.chess960 = self.chess960
 
-        board.ep_square = self.ep_square
+#         board.ep_square = self.ep_square
         board.castling_rights = self.castling_rights
         board.turn = self.turn
         board.fullmove_number = self.fullmove_number
