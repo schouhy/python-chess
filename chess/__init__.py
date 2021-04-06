@@ -3082,12 +3082,12 @@ class Board(BaseBoard):
         touched = BB_SQUARES[move.from_square] ^ BB_SQUARES[move.to_square]
         return bool(touched & self.pawns or touched & self.occupied_co[not self.turn] or move.drop == PAWN)
 
-    def _reduces_castling_rights(self, move: Move) -> bool:
-        cr = self.clean_castling_rights()
-        touched = BB_SQUARES[move.from_square] ^ BB_SQUARES[move.to_square]
-        return bool(touched & cr or
-                    cr & BB_RANK_1 and touched & self.kings & self.occupied_co[WHITE] & ~self.promoted or
-                    cr & BB_RANK_8 and touched & self.kings & self.occupied_co[BLACK] & ~self.promoted)
+#     def _reduces_castling_rights(self, move: Move) -> bool:
+#         cr = self.clean_castling_rights()
+#         touched = BB_SQUARES[move.from_square] ^ BB_SQUARES[move.to_square]
+#         return bool(touched & cr or
+#                     cr & BB_RANK_1 and touched & self.kings & self.occupied_co[WHITE] & ~self.promoted or
+#                     cr & BB_RANK_8 and touched & self.kings & self.occupied_co[BLACK] & ~self.promoted)
 
     def is_irreversible(self, move: Move) -> bool:
         """
@@ -3100,153 +3100,153 @@ class Board(BaseBoard):
         that will force the king to lose castling rights is not considered
         irreversible. Only the actual king move is.
         """
-        return self.is_zeroing(move) or self._reduces_castling_rights(move) or self.has_legal_en_passant()
+        return self.is_zeroing(move) # or self._reduces_castling_rights(move) or self.has_legal_en_passant()
 
-    def is_castling(self, move: Move) -> bool:
-        """Checks if the given pseudo-legal move is a castling move."""
-        if self.kings & BB_SQUARES[move.from_square]:
-            diff = square_file(move.from_square) - square_file(move.to_square)
-            return abs(diff) > 1 or bool(self.rooks & self.occupied_co[self.turn] & BB_SQUARES[move.to_square])
-        return False
-
-    def is_kingside_castling(self, move: Move) -> bool:
-        """
-        Checks if the given pseudo-legal move is a kingside castling move.
-        """
-        return self.is_castling(move) and square_file(move.to_square) > square_file(move.from_square)
-
-    def is_queenside_castling(self, move: Move) -> bool:
-        """
-        Checks if the given pseudo-legal move is a queenside castling move.
-        """
-        return self.is_castling(move) and square_file(move.to_square) < square_file(move.from_square)
-
-    def clean_castling_rights(self) -> Bitboard:
-        """
-        Returns valid castling rights filtered from
-        :data:`~chess.Board.castling_rights`.
-        """
-        if self._stack:
-            # No new castling rights are assigned in a game, so we can assume
-            # they were filtered already.
-            return self.castling_rights
-
-        castling = self.castling_rights & self.rooks
-        white_castling = castling & BB_RANK_1 & self.occupied_co[WHITE]
-        black_castling = castling & BB_RANK_8 & self.occupied_co[BLACK]
-
-        if not self.chess960:
-            # The rooks must be on a1, h1, a8 or h8.
-            white_castling &= (BB_A1 | BB_H1)
-            black_castling &= (BB_A8 | BB_H8)
-
-            # The kings must be on e1 or e8.
-            if not self.occupied_co[WHITE] & self.kings & ~self.promoted & BB_E1:
-                white_castling = 0
-            if not self.occupied_co[BLACK] & self.kings & ~self.promoted & BB_E8:
-                black_castling = 0
-
-            return white_castling | black_castling
-        else:
-            # The kings must be on the back rank.
-            white_king_mask = self.occupied_co[WHITE] & self.kings & BB_RANK_1 & ~self.promoted
-            black_king_mask = self.occupied_co[BLACK] & self.kings & BB_RANK_8 & ~self.promoted
-            if not white_king_mask:
-                white_castling = 0
-            if not black_king_mask:
-                black_castling = 0
-
-            # There are only two ways of castling, a-side and h-side, and the
-            # king must be between the rooks.
-            white_a_side = white_castling & -white_castling
-            white_h_side = BB_SQUARES[msb(white_castling)] if white_castling else 0
-
-            if white_a_side and msb(white_a_side) > msb(white_king_mask):
-                white_a_side = 0
-            if white_h_side and msb(white_h_side) < msb(white_king_mask):
-                white_h_side = 0
-
-            black_a_side = (black_castling & -black_castling)
-            black_h_side = BB_SQUARES[msb(black_castling)] if black_castling else BB_EMPTY
-
-            if black_a_side and msb(black_a_side) > msb(black_king_mask):
-                black_a_side = 0
-            if black_h_side and msb(black_h_side) < msb(black_king_mask):
-                black_h_side = 0
-
-            # Done.
-            return black_a_side | black_h_side | white_a_side | white_h_side
-
-    def has_castling_rights(self, color: Color) -> bool:
-        """Checks if the given side has castling rights."""
-        backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
-        return bool(self.clean_castling_rights() & backrank)
-
-    def has_kingside_castling_rights(self, color: Color) -> bool:
-        """
-        Checks if the given side has kingside (that is h-side in Chess960)
-        castling rights.
-        """
-        backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
-        king_mask = self.kings & self.occupied_co[color] & backrank & ~self.promoted
-        if not king_mask:
-            return False
-
-        castling_rights = self.clean_castling_rights() & backrank
-        while castling_rights:
-            rook = castling_rights & -castling_rights
-
-            if rook > king_mask:
-                return True
-
-            castling_rights = castling_rights & (castling_rights - 1)
-
-        return False
-
-    def has_queenside_castling_rights(self, color: Color) -> bool:
-        """
-        Checks if the given side has queenside (that is a-side in Chess960)
-        castling rights.
-        """
-        backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
-        king_mask = self.kings & self.occupied_co[color] & backrank & ~self.promoted
-        if not king_mask:
-            return False
-
-        castling_rights = self.clean_castling_rights() & backrank
-        while castling_rights:
-            rook = castling_rights & -castling_rights
-
-            if rook < king_mask:
-                return True
-
-            castling_rights = castling_rights & (castling_rights - 1)
-
-        return False
-
-    def has_chess960_castling_rights(self) -> bool:
-        """
-        Checks if there are castling rights that are only possible in Chess960.
-        """
-        # Get valid Chess960 castling rights.
-        chess960 = self.chess960
-        self.chess960 = True
-        castling_rights = self.clean_castling_rights()
-        self.chess960 = chess960
-
-        # Standard chess castling rights can only be on the standard
-        # starting rook squares.
-        if castling_rights & ~BB_CORNERS:
-            return True
-
-        # If there are any castling rights in standard chess, the king must be
-        # on e1 or e8.
-        if castling_rights & BB_RANK_1 and not self.occupied_co[WHITE] & self.kings & BB_E1:
-            return True
-        if castling_rights & BB_RANK_8 and not self.occupied_co[BLACK] & self.kings & BB_E8:
-            return True
-
-        return False
+#     def is_castling(self, move: Move) -> bool:
+#         """Checks if the given pseudo-legal move is a castling move."""
+#         if self.kings & BB_SQUARES[move.from_square]:
+#             diff = square_file(move.from_square) - square_file(move.to_square)
+#             return abs(diff) > 1 or bool(self.rooks & self.occupied_co[self.turn] & BB_SQUARES[move.to_square])
+#         return False
+# 
+#     def is_kingside_castling(self, move: Move) -> bool:
+#         """
+#         Checks if the given pseudo-legal move is a kingside castling move.
+#         """
+#         return self.is_castling(move) and square_file(move.to_square) > square_file(move.from_square)
+# 
+#     def is_queenside_castling(self, move: Move) -> bool:
+#         """
+#         Checks if the given pseudo-legal move is a queenside castling move.
+#         """
+#         return self.is_castling(move) and square_file(move.to_square) < square_file(move.from_square)
+# 
+#     def clean_castling_rights(self) -> Bitboard:
+#         """
+#         Returns valid castling rights filtered from
+#         :data:`~chess.Board.castling_rights`.
+#         """
+#         if self._stack:
+#             # No new castling rights are assigned in a game, so we can assume
+#             # they were filtered already.
+#             return self.castling_rights
+# 
+#         castling = self.castling_rights & self.rooks
+#         white_castling = castling & BB_RANK_1 & self.occupied_co[WHITE]
+#         black_castling = castling & BB_RANK_8 & self.occupied_co[BLACK]
+# 
+#         if not self.chess960:
+#             # The rooks must be on a1, h1, a8 or h8.
+#             white_castling &= (BB_A1 | BB_H1)
+#             black_castling &= (BB_A8 | BB_H8)
+# 
+#             # The kings must be on e1 or e8.
+#             if not self.occupied_co[WHITE] & self.kings & ~self.promoted & BB_E1:
+#                 white_castling = 0
+#             if not self.occupied_co[BLACK] & self.kings & ~self.promoted & BB_E8:
+#                 black_castling = 0
+# 
+#             return white_castling | black_castling
+#         else:
+#             # The kings must be on the back rank.
+#             white_king_mask = self.occupied_co[WHITE] & self.kings & BB_RANK_1 & ~self.promoted
+#             black_king_mask = self.occupied_co[BLACK] & self.kings & BB_RANK_8 & ~self.promoted
+#             if not white_king_mask:
+#                 white_castling = 0
+#             if not black_king_mask:
+#                 black_castling = 0
+# 
+#             # There are only two ways of castling, a-side and h-side, and the
+#             # king must be between the rooks.
+#             white_a_side = white_castling & -white_castling
+#             white_h_side = BB_SQUARES[msb(white_castling)] if white_castling else 0
+# 
+#             if white_a_side and msb(white_a_side) > msb(white_king_mask):
+#                 white_a_side = 0
+#             if white_h_side and msb(white_h_side) < msb(white_king_mask):
+#                 white_h_side = 0
+# 
+#             black_a_side = (black_castling & -black_castling)
+#             black_h_side = BB_SQUARES[msb(black_castling)] if black_castling else BB_EMPTY
+# 
+#             if black_a_side and msb(black_a_side) > msb(black_king_mask):
+#                 black_a_side = 0
+#             if black_h_side and msb(black_h_side) < msb(black_king_mask):
+#                 black_h_side = 0
+# 
+#             # Done.
+#             return black_a_side | black_h_side | white_a_side | white_h_side
+# 
+#     def has_castling_rights(self, color: Color) -> bool:
+#         """Checks if the given side has castling rights."""
+#         backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
+#         return bool(self.clean_castling_rights() & backrank)
+# 
+#     def has_kingside_castling_rights(self, color: Color) -> bool:
+#         """
+#         Checks if the given side has kingside (that is h-side in Chess960)
+#         castling rights.
+#         """
+#         backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
+#         king_mask = self.kings & self.occupied_co[color] & backrank & ~self.promoted
+#         if not king_mask:
+#             return False
+# 
+#         castling_rights = self.clean_castling_rights() & backrank
+#         while castling_rights:
+#             rook = castling_rights & -castling_rights
+# 
+#             if rook > king_mask:
+#                 return True
+# 
+#             castling_rights = castling_rights & (castling_rights - 1)
+# 
+#         return False
+# 
+#     def has_queenside_castling_rights(self, color: Color) -> bool:
+#         """
+#         Checks if the given side has queenside (that is a-side in Chess960)
+#         castling rights.
+#         """
+#         backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
+#         king_mask = self.kings & self.occupied_co[color] & backrank & ~self.promoted
+#         if not king_mask:
+#             return False
+# 
+#         castling_rights = self.clean_castling_rights() & backrank
+#         while castling_rights:
+#             rook = castling_rights & -castling_rights
+# 
+#             if rook < king_mask:
+#                 return True
+# 
+#             castling_rights = castling_rights & (castling_rights - 1)
+# 
+#         return False
+# 
+#     def has_chess960_castling_rights(self) -> bool:
+#         """
+#         Checks if there are castling rights that are only possible in Chess960.
+#         """
+#         # Get valid Chess960 castling rights.
+#         chess960 = self.chess960
+#         self.chess960 = True
+#         castling_rights = self.clean_castling_rights()
+#         self.chess960 = chess960
+# 
+#         # Standard chess castling rights can only be on the standard
+#         # starting rook squares.
+#         if castling_rights & ~BB_CORNERS:
+#             return True
+# 
+#         # If there are any castling rights in standard chess, the king must be
+#         # on e1 or e8.
+#         if castling_rights & BB_RANK_1 and not self.occupied_co[WHITE] & self.kings & BB_E1:
+#             return True
+#         if castling_rights & BB_RANK_8 and not self.occupied_co[BLACK] & self.kings & BB_E8:
+#             return True
+# 
+#         return False
 
     def status(self) -> Status:
         """
@@ -3418,13 +3418,13 @@ class Board(BaseBoard):
 
     def _is_safe(self, king: Square, blockers: Bitboard, move: Move) -> bool:
         if move.from_square == king:
-            if self.is_castling(move):
-                return True
-            else:
-                return not self.is_attacked_by(not self.turn, move.to_square)
-        elif self.is_en_passant(move):
-            return bool(self.pin_mask(self.turn, move.from_square) & BB_SQUARES[move.to_square] and
-                        not self._ep_skewered(king, move.from_square))
+#             if self.is_castling(move):
+#                 return True
+#             else:
+            return not self.is_attacked_by(not self.turn, move.to_square)
+#         elif self.is_en_passant(move):
+#             return bool(self.pin_mask(self.turn, move.from_square) & BB_SQUARES[move.to_square] and
+#                         not self._ep_skewered(king, move.from_square))
         else:
             return bool(not blockers & BB_SQUARES[move.from_square] or
                         ray(move.from_square, move.to_square) & BB_SQUARES[king])
@@ -3553,7 +3553,7 @@ class Board(BaseBoard):
         return (self.pawns, self.knights, self.bishops, self.rooks,
                 self.queens, self.kings,
                 self.occupied_co[WHITE], self.occupied_co[BLACK],
-                self.turn, self.clean_castling_rights(),
+                self.turn,#  self.clean_castling_rights(),
                 self.ep_square if self.has_legal_en_passant() else None)
 
     def __repr__(self) -> str:
