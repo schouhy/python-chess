@@ -1763,11 +1763,11 @@ class Board(BaseBoard):
             elif self.turn == BLACK and square_rank(move.to_square) != 0:
                 return False
 
-        # Handle castling.
-        if piece == KING:
-            move = self._from_chess960(self.chess960, move.from_square, move.to_square)
-            if move in self.generate_castling_moves():
-                return True
+#         # Handle castling.
+#         if piece == KING:
+#             move = self._from_chess960(self.chess960, move.from_square, move.to_square)
+#             if move in self.generate_castling_moves():
+#                 return True
 
         # Destination square can not be occupied.
         if self.occupied_co[self.turn] & to_mask:
