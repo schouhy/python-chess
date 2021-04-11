@@ -76,7 +76,7 @@ FILE_NAMES = ["a", "b", "c", "d", "e"]
 
 RANK_NAMES = ["1", "2", "3", "4", "5", "6"]
 
-STARTING_FEN = "rnbqk/ppppp/6/6/6/6/PPPPP/KQBNR w KQkq - 0 1"
+STARTING_FEN = "rnbqk/ppppp/6/6/6/6/PPPPP/KQBNR w 0 1"
 """The FEN for the standard chess starting position."""
 
 STARTING_BOARD_FEN = "rnbqk/ppppp/6/6/6/6/PPPPP/KQBNR"
@@ -913,8 +913,8 @@ class BaseBoard:
 
         # Ensure the FEN is valid.
         rows = fen.split("/")
-        if len(rows) != 8:
-            raise ValueError(f"expected 8 rows in position part of fen: {fen!r}")
+        if len(rows) != 6:
+            raise ValueError(f"expected 6 rows in position part of fen: {fen!r}")
 
         # Validate each row.
         for row in rows:
@@ -923,7 +923,7 @@ class BaseBoard:
             previous_was_piece = False
 
             for c in row:
-                if c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
+                if c in ["1", "2", "3", "4", "5", "6"]:
                     if previous_was_digit:
                         raise ValueError(f"two subsequent digits in position part of fen: {fen!r}")
                     field_sum += int(c)
@@ -941,8 +941,8 @@ class BaseBoard:
                 else:
                     raise ValueError(f"invalid character in position part of fen: {fen!r}")
 
-            if field_sum != 8:
-                raise ValueError(f"expected 8 columns per row in position part of fen: {fen!r}")
+            if field_sum != 5:
+                raise ValueError(f"expected 5 columns per row in position part of fen: {fen!r}")
 
         # Clear the board.
         self._clear_board()
@@ -950,7 +950,7 @@ class BaseBoard:
         # Put pieces on the board.
         square_index = 0
         for c in fen:
-            if c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
+            if c in ["1", "2", "3", "4", "5", "6"]:
                 square_index += int(c)
             elif c.lower() in PIECE_SYMBOLS:
                 piece = Piece.from_symbol(c)
@@ -2386,14 +2386,14 @@ class Board(BaseBoard):
             else:
                 raise ValueError(f"expected 'w' or 'b' for turn part of fen: {fen!r}")
 
-        # Validate castling part.
-        try:
-            castling_part = parts.pop(0)
-        except IndexError:
-            castling_part = "-"
-        else:
-            if not FEN_CASTLING_REGEX.match(castling_part):
-                raise ValueError(f"invalid castling part in fen: {fen!r}")
+#         # Validate castling part.
+#         try:
+#             castling_part = parts.pop(0)
+#         except IndexError:
+#             castling_part = "-"
+#         else:
+#             if not FEN_CASTLING_REGEX.match(castling_part):
+#                 raise ValueError(f"invalid castling part in fen: {fen!r}")
 
 #         # En passant square.
 #         try:
@@ -2446,54 +2446,54 @@ class Board(BaseBoard):
 
         # Apply.
         self.turn = turn
-        self._set_castling_fen(castling_part)
+#         self._set_castling_fen(castling_part)
 #         self.ep_square = ep_square
         self.halfmove_clock = halfmove_clock
         self.fullmove_number = fullmove_number
         self.clear_stack()
-
-    def _set_castling_fen(self, castling_fen: str) -> None:
-        if not castling_fen or castling_fen == "-":
-            self.castling_rights = BB_EMPTY
-            return
-
-        if not FEN_CASTLING_REGEX.match(castling_fen):
-            raise ValueError(f"invalid castling fen: {castling_fen!r}")
-
-        self.castling_rights = BB_EMPTY
-
-        for flag in castling_fen:
-            color = WHITE if flag.isupper() else BLACK
-            flag = flag.lower()
-            backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
-            rooks = self.occupied_co[color] & self.rooks & backrank
-            king = self.king(color)
-
-            if flag == "q":
-                # Select the leftmost rook.
-                if king is not None and lsb(rooks) < king:
-                    self.castling_rights |= rooks & -rooks
-                else:
-                    self.castling_rights |= BB_FILE_A & backrank
-            elif flag == "k":
-                # Select the rightmost rook.
-                rook = msb(rooks)
-                if king is not None and king < rook:
-                    self.castling_rights |= BB_SQUARES[rook]
-                else:
-                    self.castling_rights |= BB_FILE_H & backrank
-            else:
-                self.castling_rights |= BB_FILES[FILE_NAMES.index(flag)] & backrank
-
-    def set_castling_fen(self, castling_fen: str) -> None:
-        """
-        Sets castling rights from a string in FEN notation like ``Qqk``.
-
-        :raises: :exc:`ValueError` if the castling FEN is syntactically
-            invalid.
-        """
-        self._set_castling_fen(castling_fen)
-        self.clear_stack()
+# 
+#     def _set_castling_fen(self, castling_fen: str) -> None:
+#         if not castling_fen or castling_fen == "-":
+#             self.castling_rights = BB_EMPTY
+#             return
+# 
+#         if not FEN_CASTLING_REGEX.match(castling_fen):
+#             raise ValueError(f"invalid castling fen: {castling_fen!r}")
+# 
+#         self.castling_rights = BB_EMPTY
+# 
+#         for flag in castling_fen:
+#             color = WHITE if flag.isupper() else BLACK
+#             flag = flag.lower()
+#             backrank = BB_RANK_1 if color == WHITE else BB_RANK_8
+#             rooks = self.occupied_co[color] & self.rooks & backrank
+#             king = self.king(color)
+# 
+#             if flag == "q":
+#                 # Select the leftmost rook.
+#                 if king is not None and lsb(rooks) < king:
+#                     self.castling_rights |= rooks & -rooks
+#                 else:
+#                     self.castling_rights |= BB_FILE_A & backrank
+#             elif flag == "k":
+#                 # Select the rightmost rook.
+#                 rook = msb(rooks)
+#                 if king is not None and king < rook:
+#                     self.castling_rights |= BB_SQUARES[rook]
+#                 else:
+#                     self.castling_rights |= BB_FILE_H & backrank
+#             else:
+#                 self.castling_rights |= BB_FILES[FILE_NAMES.index(flag)] & backrank
+# 
+#     def set_castling_fen(self, castling_fen: str) -> None:
+#         """
+#         Sets castling rights from a string in FEN notation like ``Qqk``.
+# 
+#         :raises: :exc:`ValueError` if the castling FEN is syntactically
+#             invalid.
+#         """
+#         self._set_castling_fen(castling_fen)
+#         self.clear_stack()
 
     def set_board_fen(self, fen: str) -> None:
         super().set_board_fen(fen)
