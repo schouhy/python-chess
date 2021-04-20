@@ -76,10 +76,10 @@ FILE_NAMES = ["a", "b", "c", "d", "e"]
 
 RANK_NAMES = ["1", "2", "3", "4", "5", "6"]
 
-STARTING_FEN = "rnbqk/ppppp/6/6/6/6/PPPPP/KQBNR w 0 1"
+STARTING_FEN = "rnbqk/ppppp/5/5/PPPPP/KQBNR w 0 1"
 """The FEN for the standard chess starting position."""
 
-STARTING_BOARD_FEN = "rnbqk/ppppp/6/6/6/6/PPPPP/KQBNR"
+STARTING_BOARD_FEN = "rnbqk/ppppp/5/5/PPPPP/KQBNR"
 """The board part of the FEN for the standard chess starting position."""
 
 
@@ -1339,8 +1339,8 @@ class _BoardState(Generic[BoardT]):
         self.promoted = board.promoted
 
         self.turn = board.turn
-        self.castling_rights = board.castling_rights
-#        self.ep_square = board.ep_square
+#         self.castling_rights = board.castling_rights
+#         self.ep_square = board.ep_square
         self.halfmove_clock = board.halfmove_clock
         self.fullmove_number = board.fullmove_number
 
@@ -1359,7 +1359,7 @@ class _BoardState(Generic[BoardT]):
         board.promoted = self.promoted
 
         board.turn = self.turn
-        board.castling_rights = self.castling_rights
+#         board.castling_rights = self.castling_rights
 #         board.ep_square = self.ep_square
         board.halfmove_clock = self.halfmove_clock
         board.fullmove_number = self.fullmove_number
@@ -1528,7 +1528,7 @@ class Board(BaseBoard):
     def reset(self) -> None:
         """Restores the starting position."""
         self.turn = WHITE
-        self.castling_rights = BB_CORNERS
+#         self.castling_rights = BB_CORNERS
 #         self.ep_square = None
         self.halfmove_clock = 0
         self.fullmove_number = 1
@@ -1871,12 +1871,13 @@ class Board(BaseBoard):
         if self.is_checkmate():
             return "0-1" if self.turn == WHITE else "1-0"
 
-        # Draw claimed.
-        if claim_draw and self.can_claim_draw():
-            return "1/2-1/2"
+# TODO: implement a fast repetition draw rule
+#         # Draw claimed.
+#         if claim_draw and self.can_claim_draw():
+#             return "1/2-1/2"
 
         # Seventyfive-move rule or fivefold repetition.
-        if self.is_seventyfive_moves() or self.is_fivefold_repetition():
+        if self.is_fourty_moves(): # or self.is_fivefold_repetition():
             return "1/2-1/2"
 
         # Insufficient material.
@@ -1885,6 +1886,10 @@ class Board(BaseBoard):
 
         # Stalemate.
         if not any(self.generate_legal_moves()):
+            return "1/2-1/2"
+
+# TODO: Remove # Hardlimit
+        if self.fullmove_number >= 40:
             return "1/2-1/2"
 
         # Undetermined.
@@ -1960,6 +1965,13 @@ class Board(BaseBoard):
         take precedence.
         """
         return self._is_halfmoves(150)
+
+    def is_fourty_moves(self) -> bool:
+        """
+        For minichess testing
+        """
+        return self._is_halfmoves(40)
+
 
     def is_fivefold_repetition(self) -> bool:
         """
