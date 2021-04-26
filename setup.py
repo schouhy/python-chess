@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="chess",
-    version=chess.__version__,
+    version="0.0.1",
     author="Sergio Chouhy",
     author_email="sergio.chouhy@gmail.com",
     description="Minitchess variant of python-chess",
