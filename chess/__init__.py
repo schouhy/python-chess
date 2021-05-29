@@ -1877,7 +1877,7 @@ class Board(BaseBoard):
 #             return "1/2-1/2"
 
         # Seventyfive-move rule or fivefold repetition.
-        if self.is_fifteen_moves(): # or self.is_fivefold_repetition():
+        if self.is_twenty_five_moves(): # or self.is_fivefold_repetition():
             return "1/2-1/2"
 
         # Insufficient material.
@@ -1889,7 +1889,7 @@ class Board(BaseBoard):
             return "1/2-1/2"
 
 # TODO: Remove # Hardlimit
-        if self.fullmove_number >= 30:
+        if self.fullmove_number >= 50:
             return "1/2-1/2"
 
         # Undetermined.
@@ -1972,12 +1972,14 @@ class Board(BaseBoard):
         """
         return self._is_halfmoves(80)
 
-    def is_fifteen_moves(self) -> bool:
+    def is_twenty_five_moves(self) -> bool:
         """
         For minichess testing
         """
-        return self._is_halfmoves(30)
+        return self._is_halfmoves(50)
 
+    def is_fifty_moves(self) -> bool:
+        return self._is_halfmoves(100)
 
     def is_fivefold_repetition(self) -> bool:
         """
@@ -1997,8 +1999,6 @@ class Board(BaseBoard):
         """
         return self.can_claim_fifty_moves() or self.can_claim_threefold_repetition()
 
-    def is_fifty_moves(self) -> bool:
-        return self._is_halfmoves(100)
 
     def can_claim_fifty_moves(self) -> bool:
         """
